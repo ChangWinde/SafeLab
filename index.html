@@ -1,0 +1,1908 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SafeLab - Embodied Safety in Scientific Robotics</title>
+  <meta name="description" content="SafeLab is an interactive high-fidelity benchmark for embodied safety in scientific robotics.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [["\\(", "\\)"]],
+        displayMath: [["\\[", "\\]"]],
+        processEscapes: true
+      },
+      svg: { fontCache: "global" },
+      options: { skipHtmlTags: ["script", "noscript", "style", "textarea", "pre", "code"] }
+    };
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+  <style>
+    :root {
+      --cr: #f7f9fb;
+      --cr1: #eef3f7;
+      --cr2: #e5edf4;
+      --wh: #fff;
+      --bd: #d8e1ea;
+      --bd2: #b8c6d4;
+      --ink: #18202a;
+      --ink2: #344151;
+      --ink3: #607084;
+      --ink4: #91a0ae;
+      --bl: #1e5a96;
+      --bl2: #3472b2;
+      --bl-bg: #eef3fb;
+      --bl-bd: #c2d5ed;
+      --gd: #8b6200;
+      --gd2: #a07000;
+      --gd-bg: #fdf5e0;
+      --gd-bd: #e8d49a;
+      --gn: #1a6b2e;
+      --rd: #b33000;
+      --ra: 12px;
+      --shm: 0 16px 42px rgba(24, 32, 42, .10);
+      --t: .18s ease;
+      --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --font-mono: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+      --fs-body: 15px;
+      --fs-title: 34px;
+      --fs-card-title: 18px;
+      --lh-body: 1.68;
+      --lh-title: 1.18;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html {
+      scroll-behavior: smooth;
+      background: #08080a;
+      overflow-x: hidden;
+      overflow-y: auto;
+      overscroll-behavior-x: none;
+      overscroll-behavior-y: auto;
+    }
+    body {
+      font-family: var(--font-sans);
+      background: #08080a;
+      overflow-x: hidden;
+      overflow-y: visible;
+      overscroll-behavior-x: none;
+      overscroll-behavior-y: auto;
+      color: var(--ink);
+      font-size: var(--fs-body);
+      line-height: var(--lh-body);
+      letter-spacing: 0;
+      font-feature-settings: "liga" 1, "calt" 1;
+      text-rendering: optimizeLegibility;
+    }
+    img, video { display: block; max-width: 100%; }
+    a { color: inherit; }
+    main {
+      min-width: 0;
+      padding: 0 0 84px;
+      background:
+        linear-gradient(180deg, #fbfcfe 0, var(--cr) 520px),
+        var(--cr);
+    }
+    .nav-toggle {
+      position: fixed;
+      top: 18px;
+      left: 18px;
+      z-index: 120;
+      width: 44px;
+      height: 44px;
+      border-radius: 11px;
+      background: rgba(255, 255, 255, .86);
+      border: 1px solid var(--bd);
+      backdrop-filter: blur(8px);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      box-shadow: 0 2px 14px rgba(40, 30, 10, .12);
+      transition: var(--t);
+    }
+    .nav-toggle:focus-visible {
+      outline: 2px solid var(--bl);
+      outline-offset: 3px;
+    }
+    .nav-toggle:hover { background: #fff; border-color: var(--bd2); }
+    .nav-toggle span {
+      display: block;
+      width: 18px;
+      height: 2px;
+      background: var(--ink2);
+      border-radius: 2px;
+      transition: var(--t);
+    }
+    body.nav-open .nav-toggle span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+    body.nav-open .nav-toggle span:nth-child(2) { opacity: 0; }
+    body.nav-open .nav-toggle span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: min(292px, calc(100vw - 52px));
+      height: 100vh;
+      background: rgba(255, 255, 255, .97);
+      backdrop-filter: blur(10px);
+      border-right: 1px solid var(--bd);
+      padding: 72px 18px 22px;
+      overflow-y: auto;
+      z-index: 110;
+      transform: translateX(-100%);
+      transition: transform .28s cubic-bezier(.4, 0, .2, 1);
+      box-shadow: 0 0 40px rgba(40, 30, 10, .10);
+    }
+    body.nav-open .sidebar { transform: translateX(0); }
+    .nav-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(20, 16, 8, .28);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .28s;
+      z-index: 105;
+    }
+    body.nav-open .nav-backdrop { opacity: 1; pointer-events: auto; }
+    .sb-title {
+      font-family: var(--font-sans);
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--ink2);
+      letter-spacing: 0;
+      margin-bottom: 2px;
+    }
+    .sb-sub {
+      font-size: 11px;
+      color: var(--ink4);
+      margin-bottom: 16px;
+      font-weight: 500;
+    }
+    .sb-nav {
+      display: grid;
+      gap: 4px;
+    }
+    .sb-nav a {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px;
+      color: var(--ink2);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      border-radius: 8px;
+      transition: var(--t);
+    }
+    .sb-nav a:hover { background: var(--cr1); color: var(--ink); }
+    .sb-nav a.active { background: var(--bl-bg); color: var(--bl); font-weight: 600; }
+    .sb-nav .ic {
+      flex: 0 0 25px;
+      width: 25px;
+      height: 25px;
+      border-radius: 50%;
+      border: 1px solid var(--bd);
+      background: var(--wh);
+      color: var(--ink4);
+      display: grid;
+      place-items: center;
+      font-size: 11px;
+      line-height: 1;
+      font-weight: 700;
+    }
+    .sb-nav a:hover .ic,
+    .sb-nav a.active .ic {
+      border-color: var(--bl-bd);
+      background: var(--wh);
+      color: var(--bl);
+    }
+    .nav-text {
+      display: grid;
+      gap: 1px;
+      min-width: 0;
+    }
+    .nav-title {
+      color: inherit;
+      line-height: 1.22;
+    }
+    .nav-sub {
+      color: var(--ink4);
+      font-size: 10.5px;
+      line-height: 1.35;
+      font-weight: 500;
+    }
+    .sb-nav a.active .nav-sub { color: var(--bl2); }
+    .sb-meta {
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid var(--bd);
+      font-size: 11px;
+      color: var(--ink4);
+    }
+    .sb-meta .pill {
+      display: inline-block;
+      padding: 2px 8px;
+      background: var(--gd-bg);
+      border: 1px solid var(--gd-bd);
+      color: var(--gd);
+      border-radius: 10px;
+      font-size: 10px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .section {
+      max-width: 1280px;
+      margin: 0 auto 72px;
+      padding: 0 24px;
+      scroll-margin-top: 84px;
+    }
+    .section-head {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(150px, .16fr) minmax(0, 1fr);
+      gap: 22px;
+      align-items: start;
+      margin-bottom: 30px;
+      padding: 28px 0 20px;
+      border-top: 1px solid rgba(184, 198, 212, .86);
+    }
+    .section-head::before {
+      content: "";
+      position: absolute;
+      top: -1px;
+      left: 0;
+      width: 84px;
+      height: 2px;
+      background: linear-gradient(90deg, var(--bl), var(--gd2));
+    }
+    .section-head .section-copy {
+      max-width: none;
+    }
+    .section .lbl {
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: 0;
+      text-transform: uppercase;
+      color: var(--bl);
+      margin-bottom: 8px;
+    }
+    .section-head .lbl {
+      margin: 2px 0 0;
+      color: var(--bl);
+      max-width: 150px;
+      padding: 4px 9px;
+      border: 1px solid var(--bl-bd);
+      border-radius: 999px;
+      background: rgba(238, 243, 251, .72);
+      width: fit-content;
+    }
+    .section h2 {
+      font-family: var(--font-sans);
+      font-size: var(--fs-title);
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 10px;
+      line-height: var(--lh-title);
+      letter-spacing: 0;
+      text-wrap: balance;
+      hyphens: none;
+    }
+    .section-head h2 {
+      margin-bottom: 10px;
+      max-width: 1120px;
+    }
+    .section .desc {
+      font-size: 14px;
+      color: var(--ink2);
+      max-width: 780px;
+      margin-bottom: 28px;
+      line-height: 1.7;
+    }
+    .section .desc.wide-desc { max-width: 1120px; }
+    .section .desc strong { color: var(--ink); }
+    .section .desc em { color: var(--gd2); font-style: normal; font-weight: 600; }
+    .section-head .desc {
+      max-width: none;
+      margin-bottom: 0;
+      color: var(--ink3);
+      text-wrap: pretty;
+    }
+    #abstract { margin-top: 48px; }
+    #abstract .section-head { margin-top: 34px; }
+    .case-title,
+    .mini-note h3,
+    .vid-label {
+      text-wrap: balance;
+    }
+
+    #paper-info { max-width: none; padding: 0; margin-bottom: 0; background: #08080a; }
+    #hero {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      min-height: 600px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #08080a;
+      overflow: hidden;
+      border-bottom: 1px solid #1c1c20;
+    }
+    .hero-marquee {
+      position: absolute;
+      inset: 0;
+      display: block;
+      overflow: hidden;
+    }
+    .hero-track {
+      position: absolute;
+      inset: 0;
+      height: 100%;
+      width: 100%;
+      display: grid;
+      grid-template-rows: repeat(2, minmax(0, 1fr));
+    }
+    .hero-track video {
+      height: 100%;
+      width: 100%;
+      object-fit: cover;
+      display: block;
+      opacity: .9;
+      min-height: 0;
+    }
+    .hero-track video:nth-child(1) {
+      background: url("assets/images/hero_bg_1_poster.webp") center / cover no-repeat;
+    }
+    .hero-track video:nth-child(2) {
+      background: url("assets/images/hero_bg_2_poster.webp") center / cover no-repeat;
+    }
+    .hero-scrim {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 80% 75% at center, rgba(8, 8, 10, .68) 0%, rgba(8, 8, 10, .84) 62%, rgba(8, 8, 10, .95) 100%);
+    }
+    .hero-inner {
+      position: relative;
+      z-index: 3;
+      width: min(100%, 1000px);
+      min-width: 0;
+      max-width: 1000px;
+      margin: 0 auto;
+      text-align: center;
+      padding: 48px 24px;
+      color: #fff;
+    }
+    .hero-brand {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      max-width: calc(100vw - 48px);
+      margin-bottom: 20px;
+    }
+    .hero-logo {
+      width: 520px;
+      max-width: 100%;
+      height: auto;
+      object-fit: contain;
+      flex: 0 0 auto;
+      filter: drop-shadow(0 0 2px rgba(255, 255, 255, .9)) drop-shadow(0 0 30px rgba(255, 255, 255, .38)) drop-shadow(0 8px 30px rgba(0, 0, 0, .6));
+    }
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+    #hero .venue {
+      display: inline-block;
+      max-width: calc(100vw - 40px);
+      font-size: 11.5px;
+      font-weight: 600;
+      color: #f0d68a;
+      background: rgba(255, 255, 255, .06);
+      border: 1px solid rgba(240, 214, 138, .4);
+      padding: 5px 16px;
+      border-radius: 20px;
+      margin-bottom: 20px;
+      letter-spacing: 0;
+      backdrop-filter: blur(4px);
+      white-space: normal;
+    }
+    #hero .sub {
+      font-family: var(--font-sans);
+      font-size: 18px;
+      font-weight: 500;
+      color: rgba(255, 255, 255, .86);
+      max-width: 680px;
+      margin: 0 auto 18px;
+      line-height: 1.5;
+      text-wrap: balance;
+    }
+    #hero .authors {
+      width: min(100%, 1040px);
+      max-width: 1040px;
+      margin: 0 auto 5px;
+      font-size: 14px;
+      color: rgba(255, 255, 255, .90);
+      line-height: 1.5;
+      overflow-wrap: anywhere;
+      display: grid;
+      justify-items: center;
+      gap: 2px;
+      box-sizing: border-box;
+    }
+    #hero .author-line {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      column-gap: 10px;
+      row-gap: 2px;
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+    }
+    #hero .authors span {
+      display: inline-block;
+      flex: 0 0 auto;
+      white-space: nowrap;
+    }
+    #hero .authors sup, #hero .affil sup { color: #f0d68a; }
+    #hero .authors sup,
+    #hero .affil sup {
+      font-size: .68em;
+      line-height: 0;
+      vertical-align: super;
+      margin-left: 1px;
+    }
+    #hero .affil {
+      width: min(100%, 1080px);
+      max-width: 1080px;
+      margin: 0 auto 24px;
+      font-size: 12px;
+      color: rgba(255, 255, 255, .62);
+      line-height: 1.45;
+      overflow-wrap: anywhere;
+      display: grid;
+      justify-items: center;
+      gap: 2px;
+      box-sizing: border-box;
+    }
+    #hero .affil-line {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      column-gap: 9px;
+      row-gap: 2px;
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+    }
+    #hero .affil span {
+      display: inline-block;
+      flex: 0 0 auto;
+      white-space: nowrap;
+    }
+    #hero .btns {
+      display: flex;
+      gap: 9px;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 4px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 8px 18px;
+      border-radius: 8px;
+      text-decoration: none;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: var(--t);
+      white-space: nowrap;
+      font-family: var(--font-sans);
+    }
+    .b-solid { background: var(--bl); color: #fff; border-color: var(--bl); }
+    .b-solid:hover { background: #16487c; transform: translateY(-1px); }
+    .b-line { background: var(--wh); color: var(--ink2); border-color: var(--bd); }
+    .b-line:hover { border-color: var(--bd2); background: var(--cr1); }
+    .b-gold { background: var(--gd-bg); color: var(--gd); border-color: var(--gd-bd); }
+    .b-gold:hover { background: #fef0c5; }
+    .btn.is-disabled {
+      color: var(--ink2);
+      background: rgba(255, 255, 255, .92);
+      border-color: var(--bd);
+      cursor: default;
+    }
+    .btn.is-disabled:hover {
+      transform: none;
+      background: rgba(255, 255, 255, .92);
+      border-color: var(--bd);
+    }
+    .btn .soon {
+      color: var(--ink4);
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .btn .gh-ico {
+      vertical-align: -2px;
+    }
+    .hero-note {
+      max-width: 740px;
+      margin: 20px auto 0;
+      font-size: 12px;
+      color: rgba(255, 255, 255, .6);
+      line-height: 1.65;
+    }
+    .hero-watch {
+      display: inline-block;
+      margin-top: 18px;
+      font-size: 13px;
+      color: #cdd8ec;
+      text-decoration: none;
+      border-bottom: 1px solid rgba(205, 216, 236, .4);
+      padding-bottom: 1px;
+    }
+    .hero-watch:hover { color: #fff; }
+
+    #hero-teaser {
+      max-width: 1040px;
+      margin: 36px auto 0;
+    }
+    #intro-video { scroll-margin-top: 28px; }
+    #hero-teaser video {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+      border-radius: var(--ra);
+      box-shadow: 0 22px 54px rgba(24, 32, 42, .18);
+      background: #1c1a15;
+      display: block;
+      pointer-events: auto !important;
+    }
+    #hero-teaser .cap {
+      font-size: 13px;
+      color: var(--ink3);
+      margin-top: 10px;
+      text-align: center;
+    }
+    #hero-teaser .cap b { color: var(--gd2); font-style: normal; }
+
+    .abs-block {
+      background: var(--wh);
+      border: 1px solid var(--bd);
+      border-radius: var(--ra);
+      padding: 26px 32px;
+      box-shadow: 0 10px 30px rgba(24, 32, 42, .06);
+    }
+    .abs-block h3 {
+      font-family: var(--font-sans);
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 14px;
+      line-height: 1.25;
+    }
+    .abs-block p {
+      margin-bottom: 14px;
+      font-size: 14.5px;
+      color: var(--ink2);
+      line-height: 1.75;
+    }
+    .abs-block p:last-child { margin-bottom: 0; }
+    .abs-block strong { color: var(--ink); }
+    .abs-block ul {
+      margin: 6px 0 0 18px;
+      color: var(--ink2);
+      font-size: 14.5px;
+      line-height: 1.75;
+    }
+    .abs-block li { margin-bottom: 8px; }
+    video::-webkit-media-controls-timeline { pointer-events: auto !important; }
+    .abstract-figure {
+      margin-top: 18px;
+    }
+    .abstract-figure img {
+      width: 100%;
+      background: #fff;
+      object-fit: contain;
+    }
+
+    .background-grid {
+      display: grid;
+      grid-template-columns: .82fr 1.18fr;
+      gap: 18px;
+      align-items: stretch;
+    }
+    .background-copy {
+      padding: 15px 22px;
+    }
+    .background-copy h3 {
+      font-size: 21px;
+      margin-bottom: 6px;
+    }
+    .background-copy h3:not(:first-child) {
+      margin-top: 10px;
+    }
+    .background-copy p,
+    .background-copy ul {
+      font-size: 13.5px;
+      line-height: 1.55;
+    }
+    .background-copy li {
+      margin-bottom: 3px;
+    }
+    .background-media {
+      display: grid;
+      gap: 12px;
+      align-content: stretch;
+    }
+    .background-video-case {
+      margin-top: 16px;
+      margin-bottom: 0;
+    }
+    .bg-panel { display: none; }
+    .bg-panel.active { display: block; }
+    .table-card img {
+      aspect-ratio: auto;
+      object-fit: contain;
+      background: #fff;
+    }
+    .ppt-slide img {
+      width: 100%;
+      background: #fff;
+      border-radius: 6px;
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      margin: 18px 0 20px;
+    }
+    .stat-card {
+      background: var(--wh);
+      border: 1px solid var(--bd);
+      border-radius: var(--ra);
+      padding: 17px 12px 15px;
+      text-align: center;
+      box-shadow: 0 10px 28px rgba(24, 32, 42, .05);
+    }
+    .stat-card b {
+      display: block;
+      font-family: var(--font-sans);
+      color: var(--bl);
+      font-size: 36px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      line-height: .9;
+      margin-bottom: 5px;
+    }
+    .stat-card span {
+      display: block;
+      color: var(--ink4);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0;
+      font-weight: 700;
+      line-height: 1.3;
+    }
+    .stat-card span em {
+      display: block;
+      margin-top: 4px;
+      font-size: 9px;
+      font-style: normal;
+      font-weight: 700;
+      letter-spacing: 0;
+      color: var(--ink3);
+      text-transform: none;
+    }
+
+    .figure-card {
+      background: var(--wh);
+      border: 1px solid var(--bd);
+      border-radius: var(--ra);
+      padding: 12px;
+      box-shadow: 0 14px 36px rgba(24, 32, 42, .07);
+    }
+    .figure-card img {
+      width: 100%;
+      height: auto;
+      border-radius: 6px;
+      background: #fff;
+      object-fit: contain;
+    }
+    .figure-card video {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+      border-radius: 6px;
+      background: #1c1a15;
+    }
+    .poster-preview .poster-frame {
+      display: block;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      overflow: hidden;
+      border-radius: 6px;
+      background: #fff;
+    }
+    .poster-preview .poster-frame img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: 0;
+      background: #fff;
+    }
+    .cap {
+      font-size: 12.5px;
+      color: var(--ink4);
+      line-height: 1.55;
+      margin-top: 8px;
+    }
+
+    .case {
+      background: var(--wh);
+      border: 1px solid var(--bd);
+      border-radius: var(--ra);
+      padding: 22px;
+      margin-bottom: 24px;
+      box-shadow: 0 14px 36px rgba(24, 32, 42, .07);
+    }
+    .case .case-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .case .case-title {
+      font-family: var(--font-sans);
+      font-size: var(--fs-card-title);
+      font-weight: 600;
+      color: var(--ink);
+      line-height: 1.3;
+      margin-bottom: 3px;
+    }
+    .case .case-tag {
+      font-size: 11px;
+      color: var(--ink4);
+      font-weight: 500;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+    .case .case-desc {
+      font-size: 13px;
+      color: var(--ink3);
+      line-height: 1.6;
+      max-width: 780px;
+      margin-top: 6px;
+    }
+    .case .case-note {
+      font-size: 12px;
+      color: var(--gd2);
+      margin-top: 6px;
+      padding: 6px 10px;
+      background: var(--gd-bg);
+      border-radius: 6px;
+      display: inline-block;
+      border: 1px solid var(--gd-bd);
+    }
+    .shot-timeline {
+      display: flex;
+      gap: 5px;
+      margin-bottom: 14px;
+      padding: 6px;
+      background: var(--cr1);
+      border-radius: 8px;
+      flex-wrap: wrap;
+    }
+    .shot-seg {
+      flex: 1;
+      min-width: 60px;
+      height: 42px;
+      background: var(--wh);
+      border: 1px solid var(--bd);
+      border-radius: 7px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: var(--t);
+      position: relative;
+      font-size: 11px;
+    }
+    .shot-seg:hover {
+      border-color: var(--bl);
+      background: var(--bl-bg);
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(30, 90, 150, .15);
+      z-index: 2;
+    }
+    .shot-seg .marker {
+      font-weight: 700;
+      color: var(--bl);
+      font-size: 11px;
+    }
+    .shot-seg .dur {
+      font-size: 9px;
+      color: var(--ink4);
+      margin-top: 1px;
+    }
+
+    .vid-grid { display: grid; gap: 12px; }
+    .vid-grid.cols-1 { grid-template-columns: 1fr; }
+    .vid-grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
+    .vid-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+    .vid-grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+    .vid-card {
+      background: var(--wh);
+      border: 1px solid var(--bd);
+      border-radius: var(--ra);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: var(--t);
+      box-shadow: 0 14px 34px rgba(24, 32, 42, .06);
+    }
+    .vid-card.is-ours {
+      border: 2px solid var(--gd2);
+      box-shadow: 0 0 18px rgba(160, 112, 0, .18);
+      background: var(--gd-bg);
+    }
+    .vid-card video {
+      width: 100%;
+      display: block;
+      background: #1c1a15;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+      border-radius: var(--ra) var(--ra) 0 0;
+    }
+    .vid-card img {
+      width: 100%;
+      height: auto;
+      display: block;
+      background: #fff;
+      object-fit: contain;
+      border-radius: var(--ra) var(--ra) 0 0;
+    }
+    .vid-card .vid-meta {
+      padding: 8px 11px;
+      font-size: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      background: #f8fafc;
+      border-top: 1px solid var(--bd);
+    }
+    .vid-card .vid-label {
+      font-weight: 600;
+      color: var(--ink2);
+      line-height: 1.25;
+    }
+    .vid-card.is-ours .vid-label { color: var(--gd); }
+    .vid-tag {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 4px;
+      background: var(--wh);
+      border: 1px solid var(--bd);
+      color: var(--ink4);
+      white-space: nowrap;
+    }
+    .vid-card.is-ours .vid-tag {
+      background: var(--gd2);
+      color: #fff;
+      border-color: var(--gd2);
+    }
+    .vid-card .note {
+      padding: 5px 11px;
+      font-size: 11px;
+      color: var(--ink3);
+      background: #fff;
+      border-top: 1px solid var(--bd);
+    }
+    .vid-card.table-card img {
+      aspect-ratio: auto;
+      object-fit: contain;
+      background: #fff;
+    }
+    .vid-card.result-card img {
+      aspect-ratio: auto;
+      object-fit: contain;
+      background: #fff;
+    }
+    .media-link {
+      display: block;
+      color: inherit;
+      text-decoration: none;
+      background: #fff;
+    }
+
+    .method-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+      align-items: start;
+    }
+    .benchmark-videos {
+      margin: 18px 0 20px;
+    }
+    .mini-notes {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+    .mini-note {
+      background: var(--wh);
+      border: 1px solid var(--bd);
+      border-top: 4px solid var(--bl);
+      border-radius: var(--ra);
+      padding: 13px 16px;
+      box-shadow: 0 12px 30px rgba(24, 32, 42, .06);
+    }
+    .mini-note:nth-child(2) { border-top-color: var(--gn); }
+    .mini-note:nth-child(3) { border-top-color: var(--gd2); }
+    .mini-note:nth-child(4) { border-top-color: var(--rd); }
+    .mini-note h3 {
+      font-family: var(--font-sans);
+      font-size: var(--fs-card-title);
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 6px;
+    }
+    .mini-note p {
+      font-size: 12.8px;
+      color: var(--ink3);
+      line-height: 1.5;
+    }
+    .pipeline-steps {
+      margin: 0 0 14px;
+      padding-left: 20px;
+      color: var(--ink2);
+      font-size: 13.5px;
+      line-height: 1.55;
+    }
+    .pipeline-steps li {
+      margin-bottom: 7px;
+    }
+    .pipeline-steps strong {
+      color: var(--ink);
+    }
+    .results-grid { align-items: start; }
+    .result-highlights {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin: 0 0 16px;
+    }
+    .result-highlight {
+      border: 1px solid var(--bd);
+      border-radius: 10px;
+      padding: 12px 13px;
+      background:
+        linear-gradient(180deg, rgba(238, 243, 251, .78), rgba(255, 255, 255, .94));
+      min-width: 0;
+    }
+    .result-highlight b {
+      display: block;
+      color: var(--bl);
+      font-size: 22px;
+      line-height: 1;
+      letter-spacing: 0;
+      margin-bottom: 5px;
+    }
+    .result-highlight span {
+      display: block;
+      color: var(--ink3);
+      font-size: 11.5px;
+      line-height: 1.35;
+      font-weight: 600;
+    }
+    .result-card .media-link {
+      display: block;
+      overflow: hidden;
+      border-radius: 8px 8px 0 0;
+      background: #fff;
+    }
+    .failure-tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+    .failure-tab {
+      padding: 7px 16px;
+      border-radius: 20px;
+      background: var(--wh);
+      border: 1px solid var(--bd);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--ink2);
+      transition: var(--t);
+      font-family: var(--font-sans);
+    }
+    .failure-tab:hover {
+      border-color: var(--bl);
+      color: var(--bl);
+      background: var(--bl-bg);
+    }
+    .failure-tab.active {
+      background: var(--bl);
+      color: #fff;
+      border-color: var(--bl);
+    }
+    .failure-panel { display: none; }
+    .failure-panel.active { display: block; }
+
+    .resource-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 18px;
+      align-items: start;
+    }
+    .resource-copy {
+      background: var(--wh);
+      border: 1px solid var(--bd);
+      border-radius: var(--ra);
+      padding: 24px;
+      box-shadow: 0 14px 36px rgba(24, 32, 42, .07);
+    }
+    .resource-copy p {
+      color: var(--ink2);
+      font-size: 14px;
+      margin-bottom: 13px;
+    }
+    .resource-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    #citation {
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .cite-box {
+      position: relative;
+      overflow: hidden;
+      background:
+        linear-gradient(135deg, rgba(52, 114, 178, .18), transparent 34%),
+        linear-gradient(180deg, #101820, #0d1218);
+      border: 1px solid rgba(194, 213, 237, .28);
+      border-radius: var(--ra);
+      box-shadow: 0 18px 42px rgba(30, 90, 150, .16), 0 1px 12px rgba(20, 16, 8, .12);
+    }
+    .cite-box::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto;
+      height: 2px;
+      background: linear-gradient(90deg, var(--bl), var(--gd2), rgba(26, 107, 46, .85));
+      opacity: .95;
+      pointer-events: none;
+    }
+    .cite-code {
+      position: relative;
+      color: #f3f6f8;
+      padding: 24px 24px 22px;
+      overflow-x: auto;
+    }
+    .cite-box pre {
+      margin: 0;
+      padding-right: 124px;
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+      line-height: 1.7;
+      white-space: pre;
+      tab-size: 4;
+    }
+    .cp-btn {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      z-index: 2;
+      background: rgba(255, 255, 255, .10);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, .20);
+      padding: 6px 11px;
+      border-radius: 7px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: var(--t);
+      font-family: var(--font-sans);
+      white-space: nowrap;
+      backdrop-filter: blur(8px);
+    }
+    .cp-btn:hover {
+      background: rgba(52, 114, 178, .92);
+      border-color: rgba(255, 255, 255, .28);
+      color: #fff;
+      transform: translateY(-1px);
+    }
+    .cp-btn.ok {
+      background: var(--gn);
+      border-color: rgba(255, 255, 255, .24);
+    }
+    mjx-container {
+      color: inherit;
+      line-height: 0;
+    }
+    .failure-tab mjx-container,
+    .vid-tag mjx-container {
+      margin: 0 1px;
+    }
+
+    footer {
+      max-width: 880px;
+      margin: 0 auto 42px;
+      padding: 0 24px;
+      color: var(--ink4);
+      text-align: center;
+      font-size: 12px;
+    }
+
+    @media (max-width: 1100px) {
+      .vid-grid.cols-4 { grid-template-columns: repeat(2, 1fr); }
+      .stat-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 900px) {
+      #hero { min-height: 720px; }
+      .section-head {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+      .section-head .lbl { max-width: none; }
+      .background-grid, .method-grid, .resource-grid { grid-template-columns: 1fr; }
+      .mini-notes { grid-template-columns: repeat(2, 1fr); }
+      .vid-grid.cols-3, .vid-grid.cols-4 { grid-template-columns: repeat(2, 1fr); }
+      .stat-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 640px) {
+      .nav-toggle {
+        top: 14px;
+        left: 14px;
+        width: 42px;
+        height: 42px;
+      }
+      .section { padding: 0 18px; margin-bottom: 56px; scroll-margin-top: 76px; }
+      .section-head { padding: 50px 0 16px; margin-bottom: 22px; }
+      .section h2 {
+        font-size: 27px;
+        line-height: 1.17;
+      }
+      .section .desc {
+        font-size: 14px;
+        line-height: 1.66;
+      }
+      #hero {
+        min-height: 720px;
+        height: 100svh;
+      }
+      .hero-inner { padding: 42px 18px 30px; }
+      .hero-inner {
+        width: 100%;
+        max-width: 100%;
+      }
+      .hero-brand { max-width: calc(100vw - 54px); margin-bottom: 12px; }
+      .hero-logo { width: min(245px, calc(100vw - 84px)); }
+      #hero .venue {
+        font-size: 11px;
+        margin-bottom: 14px;
+      }
+      #hero .sub { font-size: 15px; max-width: 280px; margin-bottom: 12px; }
+      #hero .authors, #hero .affil {
+        width: 100%;
+      }
+      #hero .authors {
+        display: grid;
+        gap: 2px;
+        font-size: 12.2px;
+        line-height: 1.46;
+        max-width: 320px;
+      }
+      #hero .author-line {
+        column-gap: 8px;
+        row-gap: 1px;
+      }
+      #hero .affil {
+        display: grid;
+        gap: 1px;
+        font-size: 10.4px;
+        line-height: 1.45;
+        margin-bottom: 16px;
+        max-width: 330px;
+      }
+      #hero .affil-line {
+        column-gap: 7px;
+        row-gap: 0;
+      }
+      #hero .authors span {
+        display: inline-block;
+        white-space: nowrap;
+      }
+      #hero .affil span {
+        display: inline-block;
+        white-space: nowrap;
+      }
+      #hero .btns {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        width: min(280px, calc(100vw - 84px));
+        gap: 8px;
+        margin: 0 auto;
+        justify-content: stretch;
+      }
+      #hero .btns .btn {
+        width: 100%;
+        min-height: 40px;
+        padding: 7px 8px;
+        white-space: normal;
+      }
+      .btn .soon {
+        font-size: 9.5px;
+      }
+      .hero-note {
+        max-width: 270px;
+        margin-top: 14px;
+        font-size: 11.5px;
+      }
+      .hero-watch { margin-top: 12px; }
+      .abs-block, .case, .resource-copy { padding: 20px; }
+      .background-copy { padding: 20px; }
+      main { padding-bottom: 64px; }
+      .result-highlights {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+      }
+      .result-highlight {
+        padding: 10px;
+      }
+      .result-highlight b {
+        font-size: 20px;
+      }
+      .result-highlight span {
+        font-size: 10.8px;
+      }
+      .result-card .media-link {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      .result-card .media-link img {
+        width: 720px;
+        max-width: none;
+      }
+      .result-card:nth-child(2) .media-link img {
+        width: 640px;
+      }
+      .cite-code { padding: 52px 16px 16px; }
+      .cite-box pre {
+        padding-right: 0;
+        font-size: 11.5px;
+      }
+      .vid-grid.cols-2, .vid-grid.cols-3, .vid-grid.cols-4 { grid-template-columns: 1fr; }
+      .mini-notes { grid-template-columns: 1fr; }
+      .stat-grid { grid-template-columns: 1fr; }
+      .shot-seg { min-width: 74px; }
+    }
+  </style>
+</head>
+<body>
+  <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" aria-controls="siteNav" aria-expanded="false" onclick="toggleNav()">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="nav-backdrop" onclick="toggleNav(false)"></div>
+  <aside class="sidebar" id="siteNav">
+    <div class="sb-title">Contents</div>
+    <div class="sb-sub">SafeLab project page</div>
+    <nav class="sb-nav" aria-label="Project sections">
+      <a href="#paper-info"><span class="ic">01</span><span class="nav-text"><span class="nav-title">Paper Info</span><span class="nav-sub">Title, authors, links</span></span></a>
+      <a href="#abstract"><span class="ic">02</span><span class="nav-text"><span class="nav-title">Abstract</span><span class="nav-sub">Problem and contribution</span></span></a>
+      <a href="#background"><span class="ic">03</span><span class="nav-text"><span class="nav-title">Motivation</span><span class="nav-sub">Unsafe-but-successful cases</span></span></a>
+      <a href="#method"><span class="ic">04</span><span class="nav-text"><span class="nav-title">Method</span><span class="nav-sub">World, synthesis, learning</span></span></a>
+      <a href="#benchmark"><span class="ic">05</span><span class="nav-text"><span class="nav-title">Benchmark Scale</span><span class="nav-sub">Assets, tasks, trajectories</span></span></a>
+      <a href="#demos"><span class="ic">06</span><span class="nav-text"><span class="nav-title">Task Synthesis</span><span class="nav-sub">Propose, verify, repair</span></span></a>
+      <a href="#failures"><span class="ic">07</span><span class="nav-text"><span class="nav-title">Failure Modes</span><span class="nav-sub">Trajectory-level safety</span></span></a>
+      <a href="#results"><span class="ic">08</span><span class="nav-text"><span class="nav-title">Results</span><span class="nav-sub">SR, SSR, robustness</span></span></a>
+      <a href="#resources"><span class="ic">09</span><span class="nav-text"><span class="nav-title">Resources</span><span class="nav-sub">Poster, paper, OpenReview</span></span></a>
+      <a href="#closing-video"><span class="ic">10</span><span class="nav-text"><span class="nav-title">Full Demo</span><span class="nav-sub">Long-form showcase</span></span></a>
+      <a href="#citation"><span class="ic">11</span><span class="nav-text"><span class="nav-title">Citation</span><span class="nav-sub">BibTeX entry</span></span></a>
+    </nav>
+    <div class="sb-meta">
+      <span class="pill">ICML 2026</span><br>
+      Interactive project page<br>
+      Embodied safety benchmark
+    </div>
+  </aside>
+
+  <main>
+    <section class="section" id="paper-info">
+      <div id="hero">
+        <div class="hero-marquee" aria-hidden="true">
+          <div class="hero-track">
+            <video class="hero-vid" autoplay muted loop playsinline preload="metadata" poster="assets/images/hero_bg_1_poster.webp" src="assets/videos/hero_bg_1.mp4"></video>
+            <video class="hero-vid" autoplay muted loop playsinline preload="metadata" poster="assets/images/hero_bg_2_poster.webp" src="assets/videos/hero_bg_2.mp4"></video>
+          </div>
+        </div>
+        <div class="hero-scrim"></div>
+        <div class="hero-inner">
+          <div class="venue">ICML 2026 · SafeLab</div>
+          <div class="hero-brand">
+            <h1 class="sr-only">SafeLab</h1>
+            <img class="hero-logo" src="assets/images/logo_safelab_hero.webp" width="1006" height="328" decoding="async" fetchpriority="high" alt="SafeLab — Embodied Safety in Scientific Robotics">
+          </div>
+          <div class="sub">An Interactive High-Fidelity Benchmark for Embodied Safety in Scientific Robotics</div>
+          <div class="authors">
+            <div class="author-line">
+              <span>Fengshuo Bai<sup>*1,2,3</sup></span>
+              <span>Yufeng Li<sup>*1,2,3</sup></span>
+              <span>Ruihai Wu<sup>*4,5</sup></span>
+            </div>
+            <div class="author-line">
+              <span>Peishuo Wang<sup>1</sup></span>
+              <span>Yuhan Wang<sup>1</sup></span>
+              <span>Bernie Hao Zhu<sup>6</sup></span>
+              <span>Yuanfei Wang<sup>5</sup></span>
+              <span>Tawei Chou<sup>5,2,3</sup></span>
+            </div>
+            <div class="author-line">
+              <span>Jing Gao<sup>1,3</sup></span>
+              <span>Runchuan Zhu<sup>7</sup></span>
+              <span>Ying Wen<sup>1</sup></span>
+              <span>Yaodong Yang<sup>5</sup></span>
+              <span>Yuanpei Chen<sup>2</sup></span>
+            </div>
+          </div>
+          <div class="affil">
+            <div class="affil-line">
+              <span><sup>*</sup>Equal contribution</span>
+            </div>
+            <div class="affil-line">
+              <span><sup>1</sup>Shanghai Jiao Tong University</span>
+              <span><sup>2</sup>PKU-PsiBot Joint Lab</span>
+              <span><sup>3</sup>Zhongguancun Academy</span>
+            </div>
+            <div class="affil-line">
+              <span><sup>4</sup>Lightwheel</span>
+              <span><sup>5</sup>Peking University</span>
+              <span><sup>6</sup>University of Washington</span>
+              <span><sup>7</sup>National University of Singapore</span>
+            </div>
+          </div>
+          <div class="btns">
+            <a href="assets/docs/safelab_icml2026.pdf" class="btn b-solid">&#128196; Paper</a>
+            <a href="assets/docs/safelab_poster_final.pdf" class="btn b-line">&#128196; Poster</a>
+            <span class="btn b-line is-disabled" role="link" aria-disabled="true">&#129303; HF <span class="soon">releasing soon</span></span>
+            <span class="btn b-line is-disabled" role="link" aria-disabled="true"><svg class="gh-ico" viewBox="0 0 16 16" width="15" height="15" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg> GitHub <span class="soon">releasing soon</span></span>
+            <a href="#intro-video" class="btn b-line">&#9654; Demo</a>
+            <a href="#citation" class="btn b-gold">&#128218; Cite</a>
+          </div>
+          <div class="hero-note">
+            SafeLab evaluates whether embodied agents can satisfy zero-tolerance laboratory safety constraints, not just finish a task.
+          </div>
+          <a class="hero-watch" href="#intro-video">Watch the project introduction</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="abstract">
+      <div id="hero-teaser">
+        <video id="intro-video" controls muted loop preload="none" playsinline poster="assets/images/safelab_complete_demo_small_poster.webp" src="assets/videos/safelab_complete_demo_small.mp4"></video>
+        <div class="cap"><b>Complete SafeLab demo</b> presents the final end-to-end project demonstration with benchmark design, safety metrics, and experimental findings.</div>
+      </div>
+
+      <header class="section-head">
+        <div class="lbl">Abstract</div>
+        <div class="section-copy">
+          <h2>A benchmark for zero-tolerance scientific robotics</h2>
+          <p class="desc">SafeLab studies embodied agents in high-fidelity laboratory tasks where minor execution drift can become an irreversible safety failure.</p>
+        </div>
+      </header>
+
+      <div class="abs-block">
+        <p>
+          Scientific embodied agents are becoming a critical frontier for laboratory automation. Unlike conventional robotic domains, laboratory environments impose zero-tolerance constraints on manipulation precision and collision avoidance, as minor deviations can lead to irreversible chemical hazards or equipment damage.
+        </p>
+        <p>
+          Existing benchmarks predominantly feature high-tolerance manipulation tasks where intermediate failures are largely reversible, while current Vision-Language-Action (VLA) models trained via static imitation learning lack the ability to recover from execution drift, leading to catastrophic compounding errors in precision-critical domains.
+        </p>
+        <p>
+          To this end, we introduce SafeLab, a generative simulation benchmark designed for the full lifecycle of safe robot learning. Grounded in a high-fidelity chemistry lab, SafeLab integrates an LLM engine for procedural task synthesis, an automated expert for scalable demonstration collection, and an interactive environment for continuous RL refinement. Leveraging this infrastructure, we release 6,400 accepted trajectories to evaluate state-of-the-art VLA models; experiments reveal that current embodied agents fail significantly under safety constraints, while our RL post-training pipeline improves safe success by 37% in aggregate.
+        </p>
+      </div>
+      <div class="figure-card abstract-figure">
+        <img src="assets/images/teaser.webp" width="2400" height="1057" loading="lazy" decoding="async" alt="SafeLab main figure">
+        <div class="cap">SafeLab evaluates scientific robotic agents with trajectory-level safety constraints in high-fidelity laboratory environments.</div>
+      </div>
+    </section>
+
+    <section class="section" id="background">
+      <header class="section-head">
+        <div class="lbl">Background & Motivation</div>
+        <div class="section-copy">
+          <h2>Existing benchmarks miss unsafe-but-successful execution</h2>
+          <p class="desc">
+            SafeLab focuses on irreversible physical failures, physically verified task generation, safety-aware RL refinement, high-fidelity simulation, and scalable expert demonstrations.
+          </p>
+        </div>
+      </header>
+      <div class="background-grid">
+        <div class="abs-block background-copy">
+          <h3>What existing benchmarks lack</h3>
+          <ul>
+            <li>Irreversible physical failure modes.</li>
+            <li>Physically verified task generation.</li>
+            <li>Safety-aware RL interface.</li>
+            <li>High-fidelity fluid and transparent object simulation.</li>
+            <li>Scalable expert demonstrations for scientific tasks.</li>
+          </ul>
+          <h3>Why scientific robotics is zero-tolerance</h3>
+          <p>
+            Scientific robots must execute real chemical experiments under zero-tolerance constraints:
+          </p>
+          <ul>
+            <li><strong>Spillage:</strong> a small tilt error can spill hazardous liquid.</li>
+            <li><strong>Damage:</strong> a force spike can break fragile instruments.</li>
+            <li><strong>Invalid execution:</strong> minor pose errors can create fire hazards around an alcohol lamp.</li>
+          </ul>
+        </div>
+        <div class="background-media">
+          <div class="vid-card table-card">
+            <a class="media-link" href="assets/images/background_benchmark_comparison.webp" target="_blank" rel="noopener">
+              <img src="assets/images/background_benchmark_comparison.webp" width="946" height="400" loading="lazy" decoding="async" alt="Systematic comparison of simulation benchmarks">
+            </a>
+            <div class="vid-meta"><span class="vid-label">Systematic comparison of simulation benchmarks</span><span class="vid-tag">Table 1</span></div>
+            <div class="note">SafeLab uniquely combines fluid dynamics, transparent objects, irreversible failures, physically grounded task logic, RL training, massive parallelism, and safety constraints.</div>
+          </div>
+        </div>
+      </div>
+      <div class="case background-video-case">
+        <div class="case-head">
+          <div>
+            <div class="case-title">Typical unsafe operations</div>
+            <div class="case-tag">Spillage · damage · pose drift · fire hazard</div>
+            <div class="case-desc">Choose an error type to inspect one enlarged unsafe-but-successful execution.</div>
+          </div>
+        </div>
+        <div class="failure-tabs" role="tablist" aria-label="Background failure selector">
+          <button class="failure-tab active" type="button" data-bg-failure="spillage" onclick="switchBackgroundFailure('spillage')">Spillage</button>
+          <button class="failure-tab" type="button" data-bg-failure="damage" onclick="switchBackgroundFailure('damage')">Damage</button>
+          <button class="failure-tab" type="button" data-bg-failure="pose" onclick="switchBackgroundFailure('pose')">Pose drift</button>
+          <button class="failure-tab" type="button" data-bg-failure="fire" onclick="switchBackgroundFailure('fire')">Fire hazard</button>
+        </div>
+        <div class="bg-panel active" data-bg-panel="spillage">
+          <div class="vid-card">
+            <video controls muted loop preload="none" playsinline poster="assets/images/bg_failure_spillage_poster.webp"><source src="assets/videos/bg_failure_spillage.mp4" type="video/mp4"></video>
+            <div class="vid-meta"><span class="vid-label">Spillage under small execution error</span><span class="vid-tag">Liquid</span></div>
+            <div class="note">A small tilt or placement deviation can spill hazardous liquid even when the task appears complete.</div>
+          </div>
+        </div>
+        <div class="bg-panel" data-bg-panel="damage">
+          <div class="vid-card">
+            <video controls muted loop preload="none" playsinline poster="assets/images/bg_failure_damage_poster.webp"><source src="assets/videos/bg_failure_damage.mp4" type="video/mp4"></video>
+            <div class="vid-meta"><span class="vid-label">Damage to fragile laboratory objects</span><span class="vid-tag">Force</span></div>
+            <div class="note">Fragile objects and instruments turn contact force into a trajectory-level safety constraint.</div>
+          </div>
+        </div>
+        <div class="bg-panel" data-bg-panel="pose">
+          <div class="vid-card">
+            <video controls muted loop preload="none" playsinline poster="assets/images/bg_failure_pose_poster.webp"><source src="assets/videos/bg_failure_pose.mp4" type="video/mp4"></video>
+            <div class="vid-meta"><span class="vid-label">Pose drift during manipulation</span><span class="vid-tag">Spatial</span></div>
+            <div class="note">Small pose errors accumulate into unsafe-but-successful trajectories in precision-critical settings.</div>
+          </div>
+        </div>
+        <div class="bg-panel" data-bg-panel="fire">
+          <div class="vid-card">
+            <video controls muted loop preload="none" playsinline poster="assets/images/bg_failure_fire_poster.webp"><source src="assets/videos/bg_failure_fire.mp4" type="video/mp4"></video>
+            <div class="vid-meta"><span class="vid-label">Invalid execution near hazardous equipment</span><span class="vid-tag">Hazard</span></div>
+            <div class="note">Minor execution errors can trigger hazardous setups such as unsafe interaction around an alcohol lamp.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="method">
+      <header class="section-head">
+        <div class="lbl">Method Overview</div>
+        <div class="section-copy">
+          <h2>SafeLab couples generation, simulation, expert data, and learning</h2>
+          <p class="desc">
+            SafeLab is organized as a framework <em>\(F = \langle W, M, E, L \rangle\)</em>: a high-fidelity world, verified task synthesis engine, automated expert collector, and safety-aware learning interface.
+          </p>
+        </div>
+      </header>
+      <div class="method-grid">
+        <div class="figure-card ppt-slide">
+          <img src="assets/images/method_ppt_overview.webp" width="1889" height="794" loading="lazy" decoding="async" alt="SafeLab method overview from presentation">
+        </div>
+        <div class="mini-notes">
+          <div class="mini-note">
+            <h3>W: High-fidelity Scientific World</h3>
+            <p>Calibrated lab assets, fluid dynamics, transparent objects, and irreversible failure modes.</p>
+          </div>
+          <div class="mini-note">
+            <h3>M: Verified Task Synthesis Engine</h3>
+            <p>Automated task generation with physical validity checks, sim-in-the-loop verification, and repair feedback.</p>
+          </div>
+          <div class="mini-note">
+            <h3>E: Automated Expert Data Collector</h3>
+            <p>Large-scale verified tasks and accepted expert trajectories for scientific manipulation.</p>
+          </div>
+          <div class="mini-note">
+            <h3>L: Safety-Aware Learning Interface</h3>
+            <p>\(\mathrm{SSR}\) evaluation and residual RL post-training for active recovery under strict safety constraints.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="benchmark">
+      <header class="section-head">
+        <div class="lbl">Benchmark Scale</div>
+        <div class="section-copy">
+          <h2>High-fidelity assets, tasks, trajectories, and embodiments</h2>
+          <p class="desc">
+            SafeLab provides a scalable laboratory manipulation suite spanning calibrated assets, physically verified generated tasks, accepted expert trajectories, and distinct robot embodiments.
+          </p>
+        </div>
+      </header>
+      <div class="stat-grid">
+        <div class="stat-card"><b>63</b><span>lab assets<em>Glassware · Instruments · Ancillary tools</em></span></div>
+        <div class="stat-card"><b>64</b><span>atomic tasks</span></div>
+        <div class="stat-card"><b>9</b><span>categories</span></div>
+        <div class="stat-card"><b>6,400</b><span>trajectories</span></div>
+        <div class="stat-card"><b>4</b><span>embodiments</span></div>
+      </div>
+      <div class="vid-grid cols-1 benchmark-videos">
+        <div class="vid-card">
+          <video controls muted loop preload="none" playsinline poster="assets/images/assets_showcase_poster.webp"><source src="assets/videos/assets_showcase.mp4" type="video/mp4"></video>
+          <div class="vid-meta"><span class="vid-label">High-fidelity laboratory assets</span><span class="vid-tag">63 assets</span></div>
+          <div class="note">SafeLab provides calibrated glassware, instruments, ancillary tools, and safety-sensitive laboratory objects.</div>
+        </div>
+        <div class="vid-card">
+          <video controls muted loop preload="none" playsinline poster="assets/images/embodiments_showcase_new_poster.webp"><source src="assets/videos/embodiments_showcase_new.mp4" type="video/mp4"></video>
+          <div class="vid-meta"><span class="vid-label">Robot embodiments</span><span class="vid-tag">4 bodies</span></div>
+          <div class="note">Tasks transfer across multiple robot embodiments and end-effectors in the SafeLab suite.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="demos">
+      <header class="section-head">
+        <div class="lbl">Verified Generative Task Synthesis</div>
+        <div class="section-copy">
+          <h2>Generated tasks are treated as physically verifiable objects</h2>
+          <p class="desc">
+            SafeLab adopts a Propose-Verify-Repair pipeline: an LLM proposer instantiates structured task specifications, hierarchical verifiers check syntax, geometry, causality, and sim-in-the-loop feasibility, and failed proposals are converted into feedback for correction.
+          </p>
+        </div>
+      </header>
+      <div class="case">
+        <div class="case-head">
+          <div>
+            <div class="case-title">Propose-Verify-Repair pipeline</div>
+            <div class="case-tag">LLM proposer · hierarchical verifier · physical admissibility</div>
+            <div class="case-desc">Only physically admissible tasks enter the SafeLab benchmark.</div>
+          </div>
+        </div>
+        <ol class="pipeline-steps">
+          <li><strong>Propose:</strong> LLM proposer instantiates a structured task specification: scene, goals, and safety constraints.</li>
+          <li><strong>Verify:</strong> hierarchical verifier checks syntax, geometry, causal consistency, and sim-in-the-loop dynamic feasibility.</li>
+          <li><strong>Repair:</strong> failed proposals are converted into feedback for correction; only physically admissible tasks enter the benchmark.</li>
+        </ol>
+        <div class="vid-grid cols-1">
+          <div class="vid-card">
+            <video controls muted loop preload="none" playsinline poster="assets/images/auto_generation_demo_poster.webp"><source src="assets/videos/auto_generation_demo.mp4" type="video/mp4"></video>
+            <div class="vid-meta"><span class="vid-label">Verified generative task synthesis</span><span class="vid-tag">Pipeline</span></div>
+            <div class="note">The synthesis engine converts scientific instructions into verified simulation tasks and expert demonstrations.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="failures">
+      <header class="section-head">
+        <div class="lbl">Trajectory-Level Evaluation</div>
+        <div class="section-copy">
+          <h2>Unsafe-but-successful behavior</h2>
+          <p class="desc">
+            SafeLab evaluates both \(\mathrm{SR}\) standard task success and \(\mathrm{SSR}\) safe success, then reports domain-specific safety metrics across liquid, actuation, and spatial tasks.
+          </p>
+        </div>
+      </header>
+      <div class="case">
+        <div class="case-head">
+          <div>
+            <div class="case-title">Baseline vs. safety-aware residual RL</div>
+            <div class="case-tag">Spatial · force · orientation</div>
+            <div class="case-desc">Click a failure type to switch the comparison video across the three domain-specific safety metrics.</div>
+          </div>
+        </div>
+        <div class="failure-tabs" role="tablist" aria-label="Failure mode selector">
+          <button class="failure-tab active" type="button" data-failure="spatial" onclick="switchFailure('spatial')">Spatial error \(\Delta P\)</button>
+          <button class="failure-tab" type="button" data-failure="force" onclick="switchFailure('force')">Peak force \(F_{\text{peak}}\)</button>
+          <button class="failure-tab" type="button" data-failure="orientation" onclick="switchFailure('orientation')">Orientation deviation \(\theta_{\text{dev}}\)</button>
+        </div>
+        <div class="failure-panel active" data-panel="spatial">
+          <div class="vid-card">
+            <video controls muted loop preload="none" playsinline poster="assets/images/failure_spatial_poster.webp"><source src="assets/videos/failure_spatial_demo.mp4" type="video/mp4"></video>
+            <div class="vid-meta"><span class="vid-label">Spatial error for rearrangement</span><span class="vid-tag">\(\Delta P\)</span></div>
+            <div class="note">Baseline behavior completes the motion but violates spatial residual constraints; residual RL corrects the execution.</div>
+          </div>
+        </div>
+        <div class="failure-panel" data-panel="force">
+          <div class="vid-card">
+            <video controls muted loop preload="none" playsinline poster="assets/images/failure_force_poster.webp"><source src="assets/videos/failure_force_demo.mp4" type="video/mp4"></video>
+            <div class="vid-meta"><span class="vid-label">Peak contact force for fragile instruments</span><span class="vid-tag">\(F_{\text{peak}}\)</span></div>
+            <div class="note">Force-sensitive instruments expose unsafe contact even when the nominal manipulation succeeds.</div>
+          </div>
+        </div>
+        <div class="failure-panel" data-panel="orientation">
+          <div class="vid-card">
+            <video controls muted loop preload="none" playsinline poster="assets/images/failure_orientation_poster.webp"><source src="assets/videos/failure_orientation_demo.mp4" type="video/mp4"></video>
+            <div class="vid-meta"><span class="vid-label">Orientation deviation for liquid transport</span><span class="vid-tag">\(\theta_{\text{dev}}\)</span></div>
+            <div class="note">Small tilt errors can create liquid hazards that are invisible to final-state task completion.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="results">
+      <header class="section-head">
+        <div class="lbl">Results</div>
+        <div class="section-copy">
+          <h2>Task completion is much higher than safe completion</h2>
+          <p class="desc wide-desc">
+            Across state-of-the-art policies, the \(\mathrm{SR}-\mathrm{SSR}\) gap reveals hidden trajectory-level safety failures. In detailed \(\mathrm{SSR}\) comparisons, residual RL yields absolute gains of +43.0 percentage points for \(\mathrm{DP}\) and +33.1 percentage points for the \(\pi_{0.5}\) policy; under perturbations, the gains are +45.0 and +37.4 percentage points, respectively.
+          </p>
+        </div>
+      </header>
+      <div class="case">
+        <div class="case-head">
+          <div>
+            <div class="case-title">Experiment and robustness results</div>
+            <div class="case-tag">SR · SSR · safety metrics · perturbations</div>
+          </div>
+        </div>
+        <div class="result-highlights" aria-label="Key safe success improvements">
+          <div class="result-highlight"><b>+43.0</b><span>percentage-point \(\mathrm{SSR}\) gain for \(\mathrm{DP}\)</span></div>
+          <div class="result-highlight"><b>+33.1</b><span>percentage-point \(\mathrm{SSR}\) gain for \(\pi_{0.5}\)</span></div>
+          <div class="result-highlight"><b>+45.0</b><span>perturbation gain for \(\mathrm{DP}\)</span></div>
+          <div class="result-highlight"><b>+37.4</b><span>perturbation gain for \(\pi_{0.5}\)</span></div>
+        </div>
+        <div class="vid-grid cols-1 results-grid">
+          <div class="vid-card result-card">
+            <a class="media-link" href="assets/images/results_table_ppt7.webp" target="_blank" rel="noopener">
+              <img src="assets/images/results_table_ppt7.webp" width="2156" height="732" loading="lazy" decoding="async" alt="Main laboratory manipulation results from presentation slide 7">
+            </a>
+            <div class="vid-meta"><span class="vid-label">Main results on laboratory manipulation tasks</span><span class="vid-tag">Table 2</span></div>
+            <div class="note">The table reports \(\mathrm{SR}/\mathrm{SSR}\) and domain-specific safety metrics across liquid, actuation, and spatial tasks.</div>
+          </div>
+          <div class="vid-card result-card">
+            <a class="media-link" href="assets/images/robustness_ppt8.webp" target="_blank" rel="noopener">
+              <img src="assets/images/robustness_ppt8.webp" width="2400" height="1005" loading="lazy" decoding="async" alt="Robustness under perturbations from presentation slide 8">
+            </a>
+            <div class="vid-meta"><span class="vid-label">Robustness under perturbations</span><span class="vid-tag">Perturbations</span></div>
+            <div class="note">Generated visual, physical, and spatial perturbations stress different safety bottlenecks.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="resources">
+      <header class="section-head">
+        <div class="lbl">Resources</div>
+        <div class="section-copy">
+          <h2>Poster &amp; paper</h2>
+          <p class="desc">
+            The final SafeLab poster, full ICML 2026 paper, and OpenReview page.
+          </p>
+        </div>
+      </header>
+      <div class="resource-grid">
+        <a class="figure-card poster-preview" href="assets/docs/safelab_poster_final.pdf">
+          <span class="poster-frame"><img src="assets/images/poster_final_thumb_3200.webp" width="2400" height="1350" loading="lazy" decoding="async" alt="SafeLab final poster thumbnail"></span>
+          <div class="cap">Click to open the final poster PDF.</div>
+        </a>
+        <div class="resource-copy">
+          <p>
+            The poster summarizes SafeLab's benchmark construction, verified task synthesis, safety metrics, experiments, robustness studies, and sim-to-real validation.
+          </p>
+          <div class="resource-actions">
+            <a class="btn b-solid" href="assets/docs/safelab_poster_final.pdf">&#128196; Open Poster PDF</a>
+            <a class="btn b-line" href="assets/docs/safelab_icml2026.pdf">&#128196; Open Paper PDF</a>
+            <a class="btn b-line" href="https://openreview.net/forum?id=ojwpa0wXo9">OpenReview</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="closing-video">
+      <header class="section-head">
+        <div class="lbl">Full Demonstration</div>
+        <div class="section-copy">
+          <h2>SafeLab long-form showcase</h2>
+          <p class="desc">
+            An extended showcase covering additional SafeLab scenes, tasks, and embodied safety cases.
+          </p>
+        </div>
+      </header>
+      <div class="vid-grid cols-1">
+        <div class="vid-card">
+          <video controls muted loop preload="none" playsinline poster="assets/images/long_new_showcase_poster.webp"><source src="assets/videos/long_new_showcase.mp4" type="video/mp4"></video>
+          <div class="vid-meta"><span class="vid-label">Long-form SafeLab demonstration</span><span class="vid-tag">Full demo</span></div>
+          <div class="note">The full showcase summarizes extended SafeLab scenes, tasks, and embodied safety cases.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="citation">
+      <header class="section-head">
+        <div class="lbl">Citation</div>
+        <div class="section-copy">
+          <h2>Cite the work</h2>
+          <p class="desc">If you find SafeLab useful for your research, please cite our paper.</p>
+        </div>
+      </header>
+      <div class="cite-box">
+        <button class="cp-btn" id="cpBtn" onclick="copyBib()">Copy</button>
+        <div class="cite-code">
+<pre id="bib">@inproceedings{
+    bai2026safelab,
+    title={SafeLab: An Interactive High-Fidelity Benchmark for Embodied Safety in Scientific Robotics},
+    author={Fengshuo Bai and Yufeng Li and Ruihai Wu and Peishuo Wang and Yuhan Wang and Bernie Hao Zhu and Yuanfei Wang and Tawei Chou and Jing Gao and Runchuan Zhu and Ying Wen and Yaodong Yang and Yuanpei Chen},
+    booktitle={Forty-third International Conference on Machine Learning},
+    year={2026},
+    url={https://openreview.net/forum?id=ojwpa0wXo9}
+}</pre>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    SafeLab project page · Embodied safety in scientific robotics
+  </footer>
+
+  <script>
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    function toggleNav(force) {
+      const next = typeof force === "boolean" ? force : !document.body.classList.contains("nav-open");
+      document.body.classList.toggle("nav-open", next);
+      document.getElementById("navToggle").setAttribute("aria-expanded", String(next));
+    }
+
+    function isVideoNearViewport(video) {
+      const rect = video.getBoundingClientRect();
+      const margin = 360;
+      return rect.bottom > -margin && rect.top < window.innerHeight + margin;
+    }
+
+    function safePlay(video) {
+      if (reduceMotion || !isVideoNearViewport(video)) return;
+      video.muted = true;
+      video.loop = true;
+      const p = video.play();
+      if (p && p.catch) p.catch(() => {});
+    }
+
+    function copyBib() {
+      const text = document.getElementById("bib").innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = document.getElementById("cpBtn");
+        btn.classList.add("ok");
+        btn.textContent = "Copied";
+        setTimeout(() => {
+          btn.classList.remove("ok");
+          btn.textContent = "Copy";
+        }, 1200);
+      });
+    }
+
+    function switchBackgroundFailure(name) {
+      document.querySelectorAll("[data-bg-failure]").forEach(tab => {
+        tab.classList.toggle("active", tab.dataset.bgFailure === name);
+      });
+      document.querySelectorAll(".bg-panel").forEach(panel => {
+        const active = panel.dataset.bgPanel === name;
+        panel.classList.toggle("active", active);
+        if (!active) panel.querySelectorAll("video").forEach(video => video.pause());
+        if (active) panel.querySelectorAll("video").forEach(safePlay);
+      });
+    }
+
+    function switchFailure(name) {
+      document.querySelectorAll("[data-failure]").forEach(tab => {
+        tab.classList.toggle("active", tab.dataset.failure === name);
+      });
+      document.querySelectorAll(".failure-panel").forEach(panel => {
+        const active = panel.dataset.panel === name;
+        panel.classList.toggle("active", active);
+        if (!active) panel.querySelectorAll("video").forEach(video => video.pause());
+        if (active) panel.querySelectorAll("video").forEach(safePlay);
+      });
+    }
+
+    function bindNav() {
+      const links = document.querySelectorAll(".sb-nav a");
+      const ids = ["paper-info", "abstract", "background", "method", "benchmark", "demos", "failures", "results", "resources", "closing-video", "citation"];
+      const sections = ids.map(id => document.getElementById(id)).filter(Boolean);
+      function update() {
+        const y = window.scrollY + 140;
+        let active = sections[0];
+        for (const section of sections) {
+          if (section.offsetTop <= y) active = section;
+        }
+        links.forEach(link => link.classList.toggle("active", link.getAttribute("href") === "#" + active.id));
+      }
+      window.addEventListener("scroll", update, { passive: true });
+      links.forEach(link => link.addEventListener("click", () => toggleNav(false)));
+      update();
+    }
+
+    function bindLazyVideos() {
+      const videos = document.querySelectorAll("video");
+      videos.forEach(video => {
+        video.muted = true;
+        video.loop = true;
+      });
+      if (reduceMotion) {
+        videos.forEach(video => video.pause());
+        return;
+      }
+      if (!("IntersectionObserver" in window)) {
+        videos.forEach(safePlay);
+        return;
+      }
+      const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          const video = entry.target;
+          if (entry.isIntersecting) {
+            safePlay(video);
+          } else if (!video.classList.contains("hero-vid")) {
+            video.pause();
+          }
+        });
+      }, { rootMargin: "360px 0px", threshold: 0.05 });
+      videos.forEach(video => observer.observe(video));
+    }
+
+    window.addEventListener("load", () => {
+      if (!location.hash) return;
+      const target = document.querySelector(location.hash);
+      if (target) setTimeout(() => target.scrollIntoView(), 120);
+    });
+    bindLazyVideos();
+    switchBackgroundFailure("spillage");
+    switchFailure("spatial");
+    bindNav();
+  </script>
+</body>
+</html>
